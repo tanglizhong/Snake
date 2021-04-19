@@ -87,7 +87,6 @@ class SnakeGame:
   
     #Essen erstellen
     def zeichnen_essen(self):
-        canvas.delete("essen")
         while True:
             self.foodx, self.foody = random.randrange(86, 570, self.step), random.randrange(86, 370, self.step)
             #Snake und Essen dürfen nicht auf eine gleiche Stelle auftreten
@@ -131,6 +130,7 @@ class SnakeGame:
     #Urteilung:gegessen oder nicht
     def essen(self):
         if self.snakeX[0] == self.foodx and self.snakeY[0] == self.foody:
+            canvas.delete("essen")
             return True
         else:
             return False
@@ -168,7 +168,7 @@ class SnakeGame:
         
     #Tastatur Event verbinden
     def spielen(self):
-        global t,file1,rekord
+        global t,file1,rekord,zeit_label
         canvas.bind_all("<Key>", self.move)
         canvas.focus_set()
         while True:
@@ -183,8 +183,9 @@ class SnakeGame:
                 rekord = self.best
                 self.et = time.time()
                 self.dt = self.et - self.st
-                self.zeit_label = Label(canvas, text="  Zeit :\n "+ str(round(self.dt,2))+" S" ,bg = "lightblue")
-                self.zeit_label.place(x=2.5,y=250)
+                zeit_label.place_forget()
+                zeit_label = Label(canvas, text="  Zeit :\n "+ str(round(self.dt,2))+" S" ,bg = "lightblue")
+                zeit_label.place(x=2.5,y=250)
                 zeit = time.strftime("%d.%m.%Y %H:%M:%S", time.localtime())
                 file1.add_command(label=zeit)
                 self.gameover()
@@ -220,7 +221,7 @@ class SnakeGame:
         
     #neu starten 
     def restart(self, event):
-        self.zeit_label.place_forget()
+        zeit_label.place_forget()
         self.anzahl += 1
         if self.anzahl == 4:
             messagebox.showwarning(title="Info",message="Vielen Dank für Ihr Spielen!\nSie haben schon 3 Mal gespielt,die beste Note\nvon Ihnen ist schon in eine note Datei gespeichert geworden")
