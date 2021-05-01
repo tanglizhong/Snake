@@ -1,18 +1,20 @@
 """
 Autor: Lizhong Tang
 Matrikelnummer: 4068443
-Datum: 20.04.2021
+Datum: 24.04.2021
 Version: 6.0
 
 Beschreibung des Programms:
 Das ist ein "Snake" Programm, in dem man durch die Tastaturtasten "w","s","a" und "d"
-oder "up","down","left" und "right" zur Steuerung der Snake. Am Anfang tretet ein Essen
+oder "up","down","left" und "right" die Snake steuert. Am Anfang tretet ein Essen
 zufällig auf, und Snake fängt immer im Recht Unten an. Nach dem Essen wird die Snake immer Länger.
 Snake ist tot,wenn sie an die Wand oder an den eigenen körper gestoßen hat.
 Nach dem Tote zeigt uns die Spielnote, Spielstand, Rang, Name, Anzahl des Spieles, beste Note und Zeitdauer.
 Man kann egal welche Taste drücken, um das Spiel neu anzufangen.
 Nach dem Start kann man den Spielstand und die Hintergrundsfarbe verändern.
 Jeder kann 3 Mal spielen,die beste Note von 3 wird in eine note Datei gespeichert.
+Name muss Buchstaben sein,und zwar max.5 Buchstaben mit Leerzeichen
+Man darf nicht gleichzeitig 2 Tasten drücken,sonst Game Over.
 """
 
 
@@ -21,7 +23,7 @@ from tkinter import *
 from tkinter import messagebox,colorchooser       
 import random
 import time
-class SnakeGame:
+class SnakeSpiel:
     def __init__(self):
         # Initialisierung
         
@@ -50,7 +52,7 @@ class SnakeGame:
         self.zeichnen_essen()
         self.zeichnen_snake()
         self.spielen()
-        fenster.mainloop()
+        
         
         
     #Spieloberfläche erstellen
@@ -81,7 +83,7 @@ class SnakeGame:
         self.anzahl_label.place(x=3,y=170)
         self.best_label = Label(canvas, text=" Beste :\n"+ str(self.best) ,bg = "lightblue")
         self.best_label.place(x=3,y=210)
-        zeit_label = Label(canvas, text="  Zeit :\n"+str(0) + " S",bg = "lightblue")
+        zeit_label = Label(canvas, text="  Zeit :\n"+" "+str(0) + ".00 S",bg = "lightblue")
         zeit_label.place(x=2.5,y=250)
         
   
@@ -91,16 +93,20 @@ class SnakeGame:
             self.foodx, self.foody = random.randrange(86, 570, self.step), random.randrange(86, 370, self.step)
             #Snake und Essen dürfen nicht auf eine gleiche Stelle auftreten
             if self.foodx not in self.snakeX or self.foody not in self.snakeY:
-                canvas.create_rectangle(self.foodx, self.foody, self.foodx + 15, self.foody + 15, fill="red", tags="essen")
+                canvas.create_rectangle(self.foodx, self.foody, self.foodx + self.step, self.foody + self.step, fill="yellow", tags="essen")
                 break
 
             
     #Snake erstellen
     def zeichnen_snake(self):
-        canvas.delete("snake")
+        canvas.delete("snake","snakekopf","snakekopf1")
         x, y = self.snake()  
-        for i in range(len(x)):  
+        for i in range(1,len(x)):  
             canvas.create_rectangle(x[i], y[i], x[i] + self.step, y[i] + self.step, fill="orange", tags='snake')
+        canvas.create_oval(x[0],y[0],x[0] + self.step, y[0] + self.step, fill="red", tags='snakekopf')
+        canvas.create_oval(x[0]+self.step/2-3,y[0]+self.step/2-3,x[0]+self.step/2+3,y[0]+self.step/2+3, fill="black", tags='snakekopf1')
+       
+        
 
             
     #Bewegung von Snake
@@ -136,7 +142,7 @@ class SnakeGame:
             return False
 
         
-    #Kopf von  Snake an die Wand oder an die selber
+    #Kopf der Snake an die Wand oder an die selber
     def tot(self):
         if self.snakeX[0] < 71 or self.snakeX[0] > 595 or self.snakeY[0] < 11 or self.snakeY[0] > 385:
             return True
@@ -193,8 +199,6 @@ class SnakeGame:
             
             #gegessen
             elif self.essen():
-                self.snakeX[0] += self.snakeMove[0] * self.step
-                self.snakeY[0] += self.snakeMove[1] * self.step
                 time.sleep(0.005)
                 self.snakeX.insert(1, self.foodx)    #2te Stelle steht
                 self.snakeY.insert(1, self.foody)
@@ -207,16 +211,17 @@ class SnakeGame:
                 self.zeichnen_snake()
                 #Geschwindigkeit der Snake
                 canvas.after(t)
-                #Canvas akualisieren
+                #Canvas aktualisieren
                 canvas.update()
                 
                 
     #game over
     def gameover(self):
         messagebox.showwarning(title="Info",message="Game Over!")
-        canvas.delete("essen","snake")
-        canvas.bind_all("<Key>", self.restart)
+        canvas.delete("essen","snake","snakekopf","snakekopf1")
         canvas.create_text(340, 190, text="Druecken Sie bitte egal \nwelche Taste zum Start", font='Helvetica -30 bold', tags='text')
+        canvas.bind_all("<Key>", self.restart)
+        
         
         
     #neu starten 
@@ -235,6 +240,8 @@ class SnakeGame:
             self.snakeRichtung = 'left'
             self.snakeMove = [-1, 0]
             self.spielnote = -10
+            self.st = 0
+            self.st = time.time()
             self.zeichnen_ergebnis()
             self.zeichnen_essen()
             self.zeichnen_snake()
@@ -252,7 +259,7 @@ def einfach():
     m = "einfach"
     canvas.delete(foto)
     topmenu.add_command(label="Hintergrund",command=bg)
-    SnakeGame()
+    SnakeSpiel()
 
     
 #normale  Geschwindigkeit  
@@ -265,7 +272,7 @@ def normal():
     m = "normal"
     canvas.delete(foto)
     topmenu.add_command(label="Hintergrund",command=bg)
-    SnakeGame()
+    SnakeSpiel()
 
     
 #hohe  Geschwindigkeit
@@ -280,7 +287,7 @@ def schwer():
     canvas.delete(foto)
     #erst Hintergrundsfarbe ändern, nach dem Start
     topmenu.add_command(label="Hintergrund",command=bg)
-    SnakeGame()
+    SnakeSpiel()
 
     
 #Menü
@@ -307,7 +314,7 @@ def bg():
     color = colorchooser.askcolor()
     hintergrund = color[1]
     zeit_label.place_forget()
-    SnakeGame()
+    SnakeSpiel()
 
     
 #Start, 3 Stände   
@@ -315,22 +322,25 @@ def button1():
     global bt_einfach,bt_normal,bt_schwer
     bt1.place_forget()
     bt2.place_forget()
-    menue()
     bt_einfach = Button(fenster ,text="einfach",bg="white",command=einfach)       
     bt_einfach.place(x=240,y=200)
     bt_normal = Button(fenster ,text="normal",bg="white",command=normal)       
     bt_normal.place(x=240,y=250)
     bt_schwer = Button(fenster ,text="schwer",bg="white",command=schwer)       
     bt_schwer.place(x=240,y=300)
-
+    menue()
     
 #tk-Fenster schließen
 def button2():
-    global rekord,name
+    global rekord,name,m
     file_note = open("note.txt","a")
-    file_note.write(name+" "+str(rekord)+"\n")
+    file_note.write(name+"\t      "+m+"\t      "+ str(rekord)+"\n")
     file_note.close()
     fenster.destroy()
+    print("Ergebnis:\n")
+    print("Name"+"\t      "+"Stand"+"\t      "+"Note")
+    print("------------------------------------")
+    print(open("note.txt","r").read())
 
     
 #Button für Start und Ende
@@ -345,14 +355,29 @@ def button():
 #Enter-Taste Event    
 def print_name(event):
     global name
-    name = event.widget.get()
-    name_frame.destroy()
-    button()
+    try:
+        name = event.widget.get()
+        nlist = list(name)
+        for i in range(len(nlist)):
+            if ord(nlist[i])==32 or 65 <= ord(nlist[i]) <= 90 or 97 <= ord(nlist[i]) <= 122:
+                n = 0
 
-    
+            else:
+                n = 1
+                break
+
+        if n==0 and len(nlist) <= 5:
+            name_frame.destroy()
+            button()
+        else:
+            messagebox.showwarning(title="Info",message="Name muss Buchstaben sein,und zwar max.5 Buchstaben mit Leerzeichen")
+    except:
+        
+      messagebox.showwarning(title="Info",message="Bitte Geben Sie Ihren Name ein!")
 #Anfang des Programms
 if __name__ == "__main__":
     hintergrund = "green"
+    m = "None"
     fenster = Tk()
     rekord = 0
     fenster.geometry("600x400")
@@ -372,5 +397,4 @@ if __name__ == "__main__":
     canvas.pack()
     foto_datei= PhotoImage(file='willkommen.gif')
     foto = canvas.create_image(90,0, anchor='nw', image=foto_datei)
-    
-
+    fenster.mainloop()
